@@ -18,4 +18,8 @@ if(process.env.NODE_ENV === 'development'){
 app.use('/api/v1/bootcamps', bootcamps);
 const PORT = process.env.PORT || 5001;
 const server = app.listen(PORT, console.log(`running in ${process.env.NODE_ENV} mode on ${PORT}`));
-// Handle 
+// Handle unhandled promise rejections 
+process.on('unhandledRejection', (err, promise) => {
+    console.log(`Error: ${err.message}`);
+    server.close(() => process.exit(1)); // close server and exit if critical exception
+});
