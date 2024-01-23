@@ -1,11 +1,31 @@
+const ErrorResponse = require("../utils/errorResponse");
+
 const errorHandler = (err, req, res, next) => {
-    console.log(err.stack.red)
+    let error = {...err};
+    error.message = err.message;
+    console.log(err);
     // if (res.headersSent) {
     //   return next(err)
     // }
-    res.status(500).json({
+    //Mongoose bad ObjectId 
+    if (err.name === 'CastError') {
+        const message = `Bootcamp not found with id : ${err.value}`;
+        error = new ErrorResponse(message, 404);
+    }
+    //Mongoose duplicate error 
+    if (err.code === 11000 && err.name === 'MongoError')
+    {
+        const message = 'Duplicate field value entered';
+        error = new ErrorResponse(message, 400);
+    }
+    //Monogo validation error 
+    if (err.name === 'ValidationError'){
+        const message = Object.values(err.errors).map(val => val.message);
+        error = new ErrorResponse(message, 400);
+    }
+    res.status(error.statusCode || 500).json({
         success: false,
-        error: err.message
+        error: error.message || 'Server error'
     });
     
   };
